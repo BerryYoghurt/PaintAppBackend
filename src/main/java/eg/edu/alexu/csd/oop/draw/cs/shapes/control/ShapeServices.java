@@ -3,8 +3,6 @@ package eg.edu.alexu.csd.oop.draw.cs.shapes.control;
 import eg.edu.alexu.csd.oop.draw.cs.actions.Action;
 import eg.edu.alexu.csd.oop.draw.cs.shapes.model.Shape;
 import org.springframework.stereotype.Service;
-
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -21,28 +19,19 @@ public class ShapeServices {
 
     public void add(Shape newShape) {
         this.shapes.add(newShape);
-        this.undo.push(new Action<Shape>(newShape.getId(),null,null, new Shape[]{newShape}));
+        this.undo.push(new Action<>(newShape.getId(),null,null, new Shape[]{newShape}));
     }
 
     public void undo() {
         Action<?> action = undo.pop();
+        Shape s = getShapeByID(action.getShapeID());
 
         if(action.getOldParams() == null){//shape was created
-
+            s.setDeleted(true);
         }else if(action.getNewParams() == null){//shape was deleted
-
+            s.setDeleted(false);
         }else{//shape was modified
-
-        }
-        String id = action.getShapeID();
-        Shape s = shapes.stream().filter(x -> {return x.getId().equals(id);}).findAny().get();
-
-        try {
-            if(!action.undo(s)){//last action done was creation
-                shapes.remove(s);
-            }
-        } catch (InvocationTargetException | IllegalAccessException e) {
-            e.printStackTrace();
+            action.undo();
         }
 
         redo.push(action);
@@ -50,36 +39,67 @@ public class ShapeServices {
 
     public void redo() {
         Action<?> action = redo.pop();
-        if(action.getOldParams() == null){//instantiate shape
-            shapes.add(((Action<Shape>)action).getNewParams()[0]);
+        String id = action.getShapeID();
+        Shape s = getShapeByID(id);
+        if(action.getOldParams() == null){ //shape was created
+            s.setDeleted(true);
+        }else if(action.getNewParams() == null) {//shape was deleted
+            s.setDeleted(false);
         }else{
-            String id = action.getShapeID();
-            Shape s = shapes.stream().filter(x->{return x.getId().equals(id);}).findAny().get();
-            try {
-                action.redo(s);
-            } catch (InvocationTargetException | IllegalAccessException e) {
-                e.printStackTrace();
-            }
+            action.redo();
         }
         undo.push(action);
-
     }
 
     public void delete(String shapeID) {
-        Shape s = shapes.stream().filter(x -> {return x.getId().equals(shapeID);}).findAny().get();
+        Shape s = getShapeByID(shapeID);
         Action<Shape> action = new Action<>(shapeID,null,new Shape[]{s},null);//TODO
         undo.add(action);
-        shapes.remove(s);
+        s.setDeleted(true);
     }
 
     public void move(String shapeID, double x, double y) {
-
-        Action<Double> action = new Action<Double>(shapeID, Shape.class.getMethod("move"), new Double[]{},new Double[]{});
+        Shape s = getShapeByID(shapeID);
+        Double[] destination = new Double[]{x,y};
+        Action<Double> action = new Action<>(
+                shapeID,
+                s::move,
+                new Double[]{s.getX(),s.getY()},
+                destination);
+        s.move(destination);
+        undo.push(action);
     }
 
-    public void resize(String shapeID) {
+    public void resize(String shapeID, double width, double height) {
+        Shape s = getShapeByID(shapeID);
+        Double[] newSize = new Double[]{width, height};
+        Action<Double> action = new Action<>(
+                shapeID,
+                s::resize,
+                new Double[]{s.getWidth(),s.getHeight()},
+                newSize);
+        s.resize(newSize);
+        undo.push(action);
     }
 
-    public void color(String shapeID) {
+    public void color(String shapeID, String color) {
+        Shape s = getShapeByID(shapeID);
+        String[] c = new String[]{color};
+        Action<String> action = new Action<>(
+                shapeID,
+                s::color,
+                new String[]{s.getColor()},
+                c);
+        s.color(c);
+        undo.push(action);
+    }
+
+    private Shape getShapeByID(String shapeID){
+        Shape s = shapes.stream().filter(shape -> shape.getId().equals(shapeID)).findAny().get();
+        return s;
+    }
+
+    public List<Shape> getShapes() {
+        return shapes;
     }
 }

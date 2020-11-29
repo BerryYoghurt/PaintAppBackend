@@ -2,7 +2,10 @@ package eg.edu.alexu.csd.oop.draw.cs.shapes.control;
 
 import eg.edu.alexu.csd.oop.draw.cs.shapes.model.Shape;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 public class ShapeController {
@@ -26,29 +29,34 @@ public class ShapeController {
     }
 
     @PutMapping("/delete/{id}")
-    public void deleteShape(@PathVariable String shapeID){
+    public void deleteShape(@PathVariable("id") String shapeID){
         services.delete(shapeID);
     }
 
     @PutMapping("/move/{id}")
-    public void moveShape(@PathVariable String shapeID, @RequestParam("x") double x, @RequestParam("y") double y){
+    public void moveShape(@PathVariable("id") String shapeID, @RequestParam(value = "x") double x, @RequestParam(value = "y") double y){
         services.move(shapeID, x, y);
     }
 
-    public void resizeShape(String shapeID){
-        services.resize(shapeID);
+    @PutMapping("/resize/{id}")
+    public void resizeShape(@PathVariable("id") String shapeID, @RequestParam(value = "width") double width, @RequestParam(value = "height") double height){
+        services.resize(shapeID, width, height);
     }
 
-    public void recolorShape(String shapeID){
-        services.color(shapeID);
+    @PutMapping("/recolor/{id}")
+    public void recolorShape(@PathVariable("id") String shapeID, @RequestParam(value = "color") String color){
+        services.color(shapeID,color);
     }
 
-    public void save(){
-
+    @GetMapping(value = "/save", produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    public List<Shape> save(){
+        return services.getShapes().stream().filter(x->!x.isDeleted()).allMatch(); //TODO pick only not deleted
     }
 
-    public void load(){
-
+    @PostMapping(value = "load", consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    public List<Shape> load(@RequestBody List<Shape> shapes){
+        //TODO
+        return services.getShapes();
     }
 
 }

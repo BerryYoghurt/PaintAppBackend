@@ -39,12 +39,13 @@ public class ShapeFactory {
         double y = shape.getY();
         List<Line> lines = new ArrayList<>();
         //lines.add(new Line(null, ))
-        return null;
+        Triangle t = new Triangle(shape.getId(), shape.getColor(), shape.getX(), shape.getY(), shape.getWidth(), shape.getHeight());//for now
+        return t;
         //TODO
     }
 
     private static Shape createLine(Shape shape) {
-        Line l = new Line(shape.getId(), shape.getColor(), shape.getWidth(), shape.getHeight());
+        Line l = new Line(shape.getId(), shape.getColor(), shape.getX(), shape.getY(),shape.getWidth(), shape.getHeight());
         return l;
     }
 }

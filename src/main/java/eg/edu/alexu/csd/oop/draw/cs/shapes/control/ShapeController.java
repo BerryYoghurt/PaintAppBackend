@@ -6,6 +6,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 public class ShapeController {
@@ -19,13 +20,13 @@ public class ShapeController {
     }
 
     @GetMapping("/undo")
-    public void undo(){
-        services.undo();
+    public Shape undo(){
+        return services.undo();
     }
 
     @GetMapping("/redo")
-    public void redo(){
-        services.redo();
+    public Shape redo(){
+        return services.redo();
     }
 
     @PutMapping("/delete/{id}")
@@ -48,14 +49,22 @@ public class ShapeController {
         services.color(shapeID,color);
     }
 
+    /**
+     * the format is decided based on the "Accept" header of the request
+     * @return xml or json representation of shapes*/
     @GetMapping(value = "/save", produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public List<Shape> save(){
-        return services.getShapes().stream().filter(x->!x.isDeleted()).allMatch(); //TODO pick only not deleted
+        return services.getShapes().stream().filter(x->!x.isDeleted()).collect(Collectors.toList());
     }
 
-    @PostMapping(value = "load", consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    /**
+     * loads an uploaded json or xml representation of shapes
+     * the format is decided based on the "Content-Type" header of the request
+     * @return json representation of shapes*/
+    @PostMapping(value = "/load", consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public List<Shape> load(@RequestBody List<Shape> shapes){
-        //TODO
+        services.reset();//do I need to validate something?
+        services.setShapes(shapes);
         return services.getShapes();
     }
 

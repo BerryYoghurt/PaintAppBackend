@@ -4,6 +4,7 @@ public class Ellipse extends Shape{
 
     public Ellipse(String id, String color, double x, double y, double height, double width) {
         super(id, color, x, y, width, height);
+        super.setType("ellipse");
     }
 
     @Override

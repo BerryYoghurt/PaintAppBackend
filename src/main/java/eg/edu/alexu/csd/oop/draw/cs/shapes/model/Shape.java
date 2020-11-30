@@ -3,7 +3,7 @@ package eg.edu.alexu.csd.oop.draw.cs.shapes.model;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
 @JacksonXmlRootElement
-public class Shape implements Cloneable{
+public class Shape{
     private String id;
     private String color;
     private double x;
@@ -11,7 +11,7 @@ public class Shape implements Cloneable{
     private double width;
     private double height;
     private boolean deleted;
-
+    private String type;
     public Shape(){
 
     }
@@ -25,6 +25,8 @@ public class Shape implements Cloneable{
         deleted = false;
     }
 
+    /**
+     * determines whether this point is included in the shape, should consider special cases*/
     public boolean hasPoint(double x, double y){return false;};
     //public Shape clone(){}
     public void move(Double[] coordinates){
@@ -102,5 +104,13 @@ public class Shape implements Cloneable{
 
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }
